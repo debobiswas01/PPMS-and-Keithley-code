@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Feb 24 17:40:24 2024
-
-@author: biswa
-"""
 import pandas as pd
 import numpy as np
 import MultiPyVu as mpv
