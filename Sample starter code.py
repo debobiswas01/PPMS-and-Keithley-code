@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import MultiPyVu as mpv
+import pymeasure.instruments.keithley.keithley2400 as Keithley2400
 
 keithley = Keithley2400("GPIB::xxxx")
 
@@ -12,7 +13,7 @@ keithley.apply_voltage(voltage_range=start_voltage,compliance current = max_curr
 max_voltage = 1
 
 # increasing voltage linearly
-ramp_to_voltage(target_voltage=max_voltage, steps=30, pause=0.02)
+kaithley.ramp_to_voltage(target_voltage=max_voltage, steps=30, pause=0.02)
 
 #Starting the client for MultiVu control
 client = mpv.Client(host='127.0.0.1')
