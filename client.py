@@ -2,7 +2,7 @@
 """
 Created on Wed Feb 28 13:30:33 2024
 
-@author: biswa
+version that worked
 """
 import MultiPyVu as mpv
 import time
