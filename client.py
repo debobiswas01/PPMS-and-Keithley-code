@@ -1,11 +1,23 @@
-# -*- coding: utf-8 -*-
 """
 Created on Wed Feb 28 13:30:33 2024
 
-version that worked
+version that worked on 2024-02-08
+@author: Marcus Edwards, Biswas
 """
 import MultiPyVu as mpv
 import time
+from enum import Enum, auto
+
+class MVUInstrumentList(Enum):
+    DYNACOOL = auto()
+    PPMS = auto()
+    PPMSMVU = auto()
+    VERSALAB = auto()
+    MPMS3 = auto()
+    OPTICOOL = auto()
+    na = auto()
+
+mpv.instrument.InstrumentList = MVUInstrumentList
 
 with mpv.Client() as client:
     client.open()
