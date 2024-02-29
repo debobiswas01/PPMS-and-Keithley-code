@@ -6,7 +6,10 @@ Created on Wed Feb 28 14:53:09 2024
 """
 import MultiPyVu as mpv
 import time
+import numpy as np
 from enum import Enum, auto
+from pymeasure.instruments.keithley import Keithley2400
+
 
 class MVUInstrumentList(Enum):
     DYNACOOL = auto()
@@ -16,9 +19,11 @@ class MVUInstrumentList(Enum):
     MPMS3 = auto()
     OPTICOOL = auto()
     na = auto()
-    
+
+
 mpv.instrument.InstrumentList = MVUInstrumentList
-    
+
+
 def save_temp_field_chamber():
     T, sT = client.get_temperature()
     F, sF = client.get_field()
@@ -26,6 +31,7 @@ def save_temp_field_chamber():
     res = client.resistivity.get_resistance(bridge_number=1)
     print(f'{T:{7}.{3}f} {sT:{10}} {F:{7}} {sF:{20}} {C:{15}} {res}')
     return T, F, C, res
+
 
 def Scan_Field(stop):
     CurrentField, sF = client.get_field()
@@ -44,25 +50,37 @@ def Scan_Field(stop):
         client.field.approach_mode.linear,
         client.field.driven_mode.driven
     )
-    
- 
+
+    # setup Keithley
+    keithley = Keithley2400("GPIB0::5")
+
+    keithley.apply_voltage()
+    keithley.compliance_current = 0.1
+    keithley.enable_source()
+
     for t in range(2501):
-        # chamber conditions
-        T, F, C, res = save_temp_field_chamber()
-        
-        data.set_value('Time', t)
-        
-        data.set_value('Temperature', T)
-        
-        data.set_value('Field', F)
-        
-        data.set_value('Chamber Status', C)
-        
-        data.set_value('Resistance', res)
-        data.write_data()
-        
-        # poll data at roughly equal intervals based on points/ramp
-        time.sleep(wait)
+
+        # Keithley sweep
+        v_list = np.linspace(0, -16, 1)  # same range as Sammak et. al.
+
+        for v in v_list:
+            keithley.ramp_to_voltage(v, steps=10, pause=0.001)  # ramp Keithley very quickly
+            print(f'Vg: {keithley.voltage} ')
+
+            # chamber conditions
+            T, F, C, res = save_temp_field_chamber()
+
+            data.set_value('Time', t)
+            data.set_value('Temperature', T)
+            data.set_value('Field', F)
+            data.set_value('Chamber Status', C)
+            data.set_value('Resistance', res)
+            data.write_data()
+
+            # poll data at roughly equal intervals based on points/ramp
+            time.sleep(wait)
+
+    keithley.shutdown()
     
 
 with mpv.Client() as client:
@@ -84,7 +102,8 @@ with mpv.Client() as client:
         client.field.driven_mode.driven
     )
     
-    # TODO: Wait for dewar pressure below 4, delay 0
+    # Wait for dewar pressure
+    time.sleep(60 * 5)
     
     # Wait for 60 seconds after temperature and field are stable
     print('Waiting...')
@@ -116,19 +135,19 @@ with mpv.Client() as client:
     # during a field ramp from -50,000 to 0.0 Oe at 20 Oe/sec
     Scan_Field(0)  
     
-    time.sleep(10)  # wait for dewar pressure to stabilize
+    time.sleep(60 * 5)  # wait for dewar pressure to stabilize
     
     # Polling temperature/field and performing resistivity measurement 
     # During a field ramp from 0 to 50,000 Oe at 20 Oe/sec
     Scan_Field(50000)
     
-    time.sleep(10)  # wait for dewar pressure to stabilize
+    time.sleep(60 * 5)  # wait for dewar pressure to stabilize
     
     # Polling temperature/field and performing resistivity measurement 
     # During a field ramp from 50,000 to 0 Oe at 20 Oe/sec
     Scan_Field(0)
     
-    time.sleep(10)  # wait for dewar pressure to stabilize
+    time.sleep(60 * 5)  # wait for dewar pressure to stabilize
     
     # Polling temperature/field and performing resistivity measurement 
     # During a field ramp from 0 to -50,000 Oe at 20 Oe/sec
@@ -142,7 +161,6 @@ with mpv.Client() as client:
         client.field.approach_mode.linear,
         client.field.driven_mode.driven
     )
-
     client.set_temperature(
         300,
         2,

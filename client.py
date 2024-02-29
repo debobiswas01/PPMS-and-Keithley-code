@@ -1,7 +1,6 @@
 """
 Created on Wed Feb 28 13:30:33 2024
 
-version that worked on 2024-02-08
 @author: Marcus Edwards, Biswas
 """
 import MultiPyVu as mpv
