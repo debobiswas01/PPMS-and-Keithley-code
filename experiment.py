@@ -102,7 +102,6 @@ def Scan_Field(stop):
         print(f'Encountered exception: {str(e)}')
         keithley.shutdown()
 
-
 with mpv.Client() as client:
     client.open()
     
@@ -129,6 +128,7 @@ with mpv.Client() as client:
     
     # Wait for dewar pressure
     time.sleep(60 * 5)  # TODO: ask Bobby how long this takes!
+
     
     # Wait for 60 seconds after temperature and field are stable
     print('Waiting...')
