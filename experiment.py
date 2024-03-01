@@ -60,12 +60,14 @@ def Scan_Field(stop):
 
     for t in range(2501):
 
+        start_time = time.time()
+
         # Keithley sweep
-        v_list = np.linspace(0, -16, 1)  # same range as Sammak et. al.
+        v_list = np.linspace(0, -16, 17)  # same range as Sammak et. al.
 
         for v in v_list:
             keithley.ramp_to_voltage(v, steps=10, pause=0.001)  # ramp Keithley very quickly
-            print(f'Vg: {keithley.voltage} ')
+            print(f'Vg: {keithley.voltage} ', end="")
 
             # chamber conditions
             T, F, C, res = save_temp_field_chamber()
@@ -75,10 +77,18 @@ def Scan_Field(stop):
             data.set_value('Field', F)
             data.set_value('Chamber Status', C)
             data.set_value('Resistance', res)
+            data.set_value('Gate Voltage', keithley.voltage)
             data.write_data()
 
-            # poll data at roughly equal intervals based on points/ramp
-            time.sleep(wait)
+        end_time = time.time()
+        time_diff = end_time - start_time
+
+        if time_diff > wait:
+            raise Exception('The inner sweep takes too long!')
+
+        # poll data at roughly equal intervals based on points/ramp
+        time.sleep(wait - time_diff)
+
 
     keithley.shutdown()
     
@@ -128,7 +138,7 @@ with mpv.Client() as client:
     
     # configure the MultiVu columns
     data = mpv.DataFile()
-    data.add_multiple_columns(['Time','Temperature', 'Field', 'Chamber Status', 'Resistance'])
+    data.add_multiple_columns(['Time', 'Temperature', 'Field', 'Chamber Status', 'Resistance', 'Gate Voltage'])
     data.create_file_and_write_header('Resistance.dat', 'Hallbar data')
     
     # Polling temperature/field and performing resistivity measurement 
