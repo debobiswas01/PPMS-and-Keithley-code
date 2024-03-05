@@ -105,9 +105,6 @@ with mpv.Client() as client:
         client.field.driven_mode.driven
     )
 
-    # Wait for dewar pressure
-    time.sleep(60 * 5)
-
     # Wait for 60 seconds after temperature and field are stable
     print('Waiting...')
     client.wait_for(
@@ -115,6 +112,8 @@ with mpv.Client() as client:
         timeout_sec=0,
         bitmask=client.temperature.waitfor | client.field.waitfor
     )
+
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
 
     # Configure resistivity measurement
     client.resistivity.bridge_setup(
@@ -137,11 +136,17 @@ with mpv.Client() as client:
     # step the field and sweep Vg at 5 steps between 0 and -50000 Oe
     step_field(-50000, 0, 5)
 
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
+
     # step the field and sweep Vg at 5 steps between 0 and 50000 Oe
     step_field(0, 50000, 5)
 
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
+
     # step the field and sweep Vg at 5 steps between 0 and 50000 Oe
     step_field(50000, 0, 5)
+
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
 
     # Set 300 K
     print('Setting 300 K')
@@ -149,4 +154,11 @@ with mpv.Client() as client:
         300,
         2,
         client.temperature.approach_mode.fast_settle
+    )
+    # Wait for 60 seconds after temperature and field are stable
+    print('Waiting...')
+    client.wait_for(
+        60,
+        timeout_sec=0,
+        bitmask=client.temperature.waitfor | client.field.waitfor
     )
