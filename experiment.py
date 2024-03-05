@@ -121,14 +121,6 @@ with mpv.Client() as client:
         client.field.approach_mode.linear,
         client.field.driven_mode.driven
     )
-    time.sleep(100 * 60)  # temp ramp is limiting in time
-    #time.sleep(2500)
-    print(f"Field at {client.get_field()}")
-    print(f"Temp at {client.get_temperature()}")
-    
-    
-    # Wait for dewar pressure
-    time.sleep(60 * 5)  # TODO: ask Bobby how long this takes!
     
     # Wait for 60 seconds after temperature and field are stable
     print('Waiting...')
@@ -137,6 +129,14 @@ with mpv.Client() as client:
         timeout_sec=0,
         bitmask=client.temperature.waitfor | client.field.waitfor
     )
+
+    # time.sleep(100 * 60)  alternative to the wait_for above... should ideally be identical
+
+    print(f"Field at {client.get_field()}")
+    print(f"Temp at {client.get_temperature()}")
+
+    # Wait for dewar pressure
+    time.sleep(60 * 60)
     
     # Configure resistivity measurement
     client.resistivity.bridge_setup(
@@ -160,19 +160,19 @@ with mpv.Client() as client:
     # during a field ramp from -50,000 to 0.0 Oe at 20 Oe/sec
     Scan_Field(0)  
     
-    time.sleep(60 * 5)  # wait for dewar pressure to stabilize
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
     
     # Polling temperature/field and performing resistivity measurement 
     # During a field ramp from 0 to 50,000 Oe at 20 Oe/sec
     Scan_Field(50000)
     
-    time.sleep(60 * 5)  # wait for dewar pressure to stabilize
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
     
     # Polling temperature/field and performing resistivity measurement 
     # During a field ramp from 50,000 to 0 Oe at 20 Oe/sec
     Scan_Field(0)
     
-    time.sleep(60 * 5)  # wait for dewar pressure to stabilize
+    time.sleep(60 * 60)  # wait for dewar pressure to stabilize
     
     # Polling temperature/field and performing resistivity measurement 
     # During a field ramp from 0 to -50,000 Oe at 20 Oe/sec
@@ -191,4 +191,13 @@ with mpv.Client() as client:
         3,
         client.temperature.approach_mode.fast_settle
     )
-    time.sleep(100 * 60)
+
+    # Wait for 60 seconds after temperature and field are stable
+    print('Waiting...')
+    client.wait_for(
+        60,
+        timeout_sec=0,
+        bitmask=client.temperature.waitfor | client.field.waitfor
+    )
+
+    #time.sleep(100 * 60)  alternative to the wait_for above... should ideally be identical
