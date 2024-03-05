@@ -102,7 +102,6 @@ def Scan_Field(stop):
         print(f'Encountered exception: {str(e)}')
         keithley.shutdown()
 
-
 with mpv.Client() as client:
     client.open()
     
